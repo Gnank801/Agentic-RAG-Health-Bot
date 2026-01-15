@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Health Agent | AI-Powered Patient Summaries</title>
+    <meta name="description" content="Intelligent health data retrieval with Gemini AI">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Animated Background -->
+        <div class="bg-gradient"></div>
+        <div class="bg-orbs">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+        </div>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    </svg>
+                </div>
+                <h1>RAG Health Agent</h1>
+            </div>
+            <div class="header-actions">
+                <button id="export-btn" class="btn btn-outline" onclick="exportToPDF()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14,2 14,8 20,8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10,9 9,9 8,9" />
+                    </svg>
+                    Export PDF
+                </button>
+                <button id="ingest-btn" class="btn btn-secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17,8 12,3 7,8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    Load Sample Data
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar: Patient List -->
+            <aside class="sidebar glass-panel">
+                <h2 class="sidebar-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    Patients <span id="patient-count" class="patient-count"></span>
+                </h2>
+                <!-- Patient Search -->
+                <div class="patient-search">
+                    <input type="text" id="patient-search" placeholder="Search patients..." autocomplete="off">
+                </div>
+                <div id="patient-list" class="patient-list">
+                    <div class="empty-state">
+                        <p>No patients loaded</p>
+                        <small>Click "Load Sample Data" to start</small>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat Area -->
+            <section class="chat-area">
+                <!-- Messages Container -->
+                <div id="messages" class="messages">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                        </div>
+                        <h2>Welcome to RAG Health Agent</h2>
+                        <p>Ask questions about patient health records with AI-powered retrieval.</p>
+                        <div class="example-queries">
+                            <p>Try asking:</p>
+                            <button class="example-btn" onclick="setQuery('Give me a health summary for John Doe')">
+                                "Give me a health summary for John Doe"
+                            </button>
+                            <button class="example-btn" onclick="setQuery('What medications is Jane Smith taking?')">
+                                "What medications is Jane Smith taking?"
+                            </button>
+                            <button class="example-btn" onclick="setQuery('Show me the lab results for patient P001')">
+                                "Show me the lab results for patient P001"
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area glass-panel">
+                    <div class="input-wrapper">
+                        <select id="patient-filter" class="patient-select">
+                            <option value="">All Patients</option>
+                        </select>
+                        <input type="text" id="query-input" placeholder="Ask about patient health records..."
+                            autocomplete="off">
+                        <button id="send-btn" class="btn btn-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13" />
+                                <polygon points="22,2 15,22 11,13 2,9 22,2" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Status Toast -->
+        <div id="toast" class="toast hidden">
+            <span id="toast-message"></span>
+        </div>
+
+        <!-- Patient Detail Modal -->
+        <div id="patient-modal" class="modal hidden">
+            <div class="modal-content glass-panel">
+                <div class="modal-header">
+                    <div id="modal-patient-avatar" class="patient-avatar larger"></div>
+                    <div class="modal-title-wrapper">
+                        <h2 id="modal-patient-name">Patient Name</h2>
+                        <span id="modal-patient-id" class="patient-id">ID: 000</span>
+                    </div>
+                    <button class="modal-close" onclick="closeModal()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="modal-details" class="modal-details">
+                        <!-- Details will be injected here -->
+                        <div class="spinner-wrapper">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let patients = [];
+        let chatHistory = []; // stores { role, content }
+        let isLoading = false;
+
+        // DOM Elements
+        const messagesEl = document.getElementById('messages');
+        const queryInput = document.getElementById('query-input');
+        const sendBtn = document.getElementById('send-btn');
+        const ingestBtn = document.getElementById('ingest-btn');
+        const patientList = document.getElementById('patient-list');
+        const patientFilter = document.getElementById('patient-filter');
+        const patientSearch = document.getElementById('patient-search');
+        const patientCount = document.getElementById('patient-count');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
+        // Debounce helper
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            toastMessage.textContent = message;
+            toast.className = `toast ${type}`;
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        // Set query from example buttons
+        function setQuery(query) {
+            queryInput.value = query;
+            queryInput.focus();
+        }
+
+        // Add message to chat
+        function addMessage(content, type = 'user', sources = []) {
+            // Remove welcome message if present
+            const welcome = messagesEl.querySelector('.welcome-message');
+            if (welcome) welcome.remove();
+
+            const messageEl = document.createElement('div');
+            messageEl.className = `message message-${type}`;
+
+            if (type === 'assistant') {
+                messageEl.innerHTML = `
+                    <div class="message-header">
+                        <div class="avatar avatar-ai">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                        </div>
+                        <span>Health Agent</span>
+                    </div>
+                    <div class="message-content markdown-body">${formatMarkdown(content)}</div>
+                    ${sources.length > 0 ? `
+                        <div class="sources">
+                            <span class="sources-label">Sources:</span>
+                            ${sources.map(s => `<span class="source-tag">${s.patient_name || s.patient_id}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                `;
+            } else {
+                messageEl.innerHTML = `
+                    <div class="message-header">
+                        <div class="avatar avatar-user">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <span>You</span>
+                    </div>
+                    <div class="message-content">${content}</div>
+                `;
+            }
+
+            messagesEl.appendChild(messageEl);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+
+            // Animate in
+            requestAnimationFrame(() => messageEl.classList.add('visible'));
+        }
+
+        // Add loading indicator
+        function addLoadingIndicator() {
+            const loadingEl = document.createElement('div');
+            loadingEl.id = 'loading-indicator';
+            loadingEl.className = 'message message-assistant loading';
+            loadingEl.innerHTML = `
+                <div class="message-header">
+                    <div class="avatar avatar-ai">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <span>Health Agent</span>
+                </div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            messagesEl.appendChild(loadingEl);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        // Remove loading indicator
+        function removeLoadingIndicator() {
+            const loading = document.getElementById('loading-indicator');
+            if (loading) loading.remove();
+        }
+
+        // Format markdown-ish content
+        function formatMarkdown(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/\n/g, '<br>')
+                .replace(/^- (.+)/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+                .replace(/<\/ul>\s*<ul>/g, '');
+        }
+
+        // Load patients (with optional search)
+        async function loadPatients(searchQuery = '') {
+            try {
+                const url = searchQuery
+                    ? `/api/patients?search=${encodeURIComponent(searchQuery)}&limit=200`
+                    : '/api/patients?limit=200';
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Failed to load patients');
+                patients = await res.json();
+                patientCount.textContent = `(${patients.length})`;
+                renderPatients();
+            } catch (err) {
+                console.error('Error loading patients:', err);
+            }
+        }
+
+        // Render patient list
+        function renderPatients() {
+            if (patients.length === 0) {
+                patientList.innerHTML = `
+                    <div class="empty-state">
+                        <p>No patients loaded</p>
+                        <small>Click "Load Sample Data" to start</small>
+                    </div>
+                `;
+                return;
+            }
+
+            patientList.innerHTML = patients.map(p => `
+                <div class="patient-card" data-id="${p.id}">
+                    <div class="patient-avatar">${p.name.charAt(0)}</div>
+                    <div class="patient-info">
+                        <span class="patient-name">${p.name}</span>
+                        <span class="patient-id">${p.id}</span>
+                    </div>
+                    <div class="patient-card-actions">
+                        <button class="icon-btn view-btn" title="View Profile" onclick="event.stopPropagation(); showPatientDetail('${p.id}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Update filter dropdown
+            patientFilter.innerHTML = '<option value="">All Patients</option>' +
+                patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+            // Add click handlers
+            patientList.querySelectorAll('.patient-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    patientFilter.value = card.dataset.id;
+                    queryInput.focus();
+                });
+            });
+        }
+
+        // Send query
+        async function sendQuery() {
+            const question = queryInput.value.trim();
+            if (!question || isLoading) return;
+
+            const patientId = patientFilter.value || null;
+
+            addMessage(question, 'user');
+            queryInput.value = '';
+            isLoading = true;
+            sendBtn.disabled = true;
+
+            addLoadingIndicator();
+
+            try {
+                // Format history for the backend
+                const formattedHistory = chatHistory
+                    .map(m => `${m.role === 'user' ? 'Human' : 'Assistant'}: ${m.content}`)
+                    .join('\n\n');
+
+                const res = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question,
+                        patient_id: patientId,
+                        chat_history: formattedHistory
+                    })
+                });
+
+                removeLoadingIndicator();
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Query failed');
+                }
+
+                const data = await res.json();
+                addMessage(data.response, 'assistant', data.sources);
+
+                // Update history (max 10 turns to save tokens)
+                chatHistory.push({ role: 'user', content: question });
+                chatHistory.push({ role: 'assistant', content: data.response });
+                if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+
+            } catch (err) {
+                removeLoadingIndicator();
+                addMessage(`Error: ${err.message}`, 'assistant');
+                showToast(err.message, 'error');
+            } finally {
+                isLoading = false;
+                sendBtn.disabled = false;
+            }
+        }
+
+        // Ingest sample data
+        async function ingestSampleData() {
+            if (isLoading) return;
+            isLoading = true;
+            ingestBtn.disabled = true;
+            ingestBtn.innerHTML = `
+                <div class="spinner"></div>
+                Loading...
+            `;
+
+            try {
+                const res = await fetch('/api/ingest/sample', { method: 'POST' });
+                if (!res.ok) throw new Error('Ingestion failed');
+
+                const data = await res.json();
+                showToast(`✓ ${data.documents_ingested} patient records loaded`, 'success');
+                await loadPatients();
+            } catch (err) {
+                showToast(`Error: ${err.message}`, 'error');
+            } finally {
+                isLoading = false;
+                ingestBtn.disabled = false;
+                ingestBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17,8 12,3 7,8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    Load Sample Data
+                `;
+            }
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', sendQuery);
+        queryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendQuery();
+            }
+        });
+        ingestBtn.addEventListener('click', ingestSampleData);
+
+        // Patient search with debounce
+        const debouncedSearch = debounce((query) => {
+            loadPatients(query);
+        }, 300);
+
+        patientSearch.addEventListener('input', (e) => {
+            debouncedSearch(e.target.value);
+        });
+
+        // Modal Management
+        const modal = document.getElementById('patient-modal');
+        const modalDetails = document.getElementById('modal-details');
+
+        async function showPatientDetail(patientId) {
+            const patient = patients.find(p => p.id === patientId);
+            if (!patient) return;
+
+            // Reset modal
+            modal.classList.remove('hidden');
+            document.getElementById('modal-patient-name').textContent = patient.name;
+            document.getElementById('modal-patient-id').textContent = `ID: ${patient.id}`;
+            document.getElementById('modal-patient-avatar').textContent = patient.name.charAt(0);
+            modalDetails.innerHTML = '<div class="spinner-wrapper"><div class="spinner"></div></div>';
+
+            try {
+                const res = await fetch(`/api/patients/${patientId}`);
+                if (!res.ok) throw new Error('Failed to load patient details');
+                const data = await res.json();
+
+                // Format details
+                modalDetails.innerHTML = data.records.map((rec, i) => `
+                    <div class="detail-section">
+                        ${formatMarkdown(rec)}
+                    </div>
+                `).join('');
+            } catch (err) {
+                modalDetails.innerHTML = `<div class="empty-state"><p>Error: ${err.message}</p></div>`;
+            }
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+        }
+
+        // Close modal on outside click
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Make functions global
+        window.showPatientDetail = showPatientDetail;
+        window.closeModal = closeModal;
+        window.exportToPDF = exportToPDF;
+
+        // Initial load
+        loadPatients();
+    </script>
+</body>
+
+</html>

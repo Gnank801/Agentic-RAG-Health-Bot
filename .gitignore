@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+data/*.csv
+!data/disease_knowledge.csv
+data/*.json
