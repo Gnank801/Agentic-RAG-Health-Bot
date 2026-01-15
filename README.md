@@ -1,12 +1,12 @@
 # 🏥 RAG Health Agent
 
-An AI-powered agentic RAG system for querying patient health records. Built with **FastAPI**, **LangChain**, **Pinecone**, and **Groq (Llama 3.3)**.
+An AI-powered **Agentic RAG** system for querying patient health records at scale. Built with **FastAPI**, **LangChain**, **Pinecone**, and **Groq (Llama 3.3 70B)**.
 
-![Dashboard](walkthrough_media/dashboard.png)
+![Dashboard](chat_history.png)
 
 ## ✨ Features
 
-- **Agentic RAG**: Retrieves and synthesizes data from 500+ synthetic patient records.
+- **Agentic RAG**: Retrieves and synthesizes data from **10,000+ synthetic patient records**.
 - **Rich Medical Context**: Ingests Demographics, Diagnoses, Medications, Allergies, Immunizations, and Procedures.
 - **Smart Retrieval**: Uses **Hybrid Search** + **BGE Reranking** for high precision.
 - **Multi-turn Chat**: Remembers conversation context (e.g., "What about *his* medication?").

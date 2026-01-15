@@ -53,4 +53,4 @@ For a deep dive into the system design, challenges (like API rate limits), and f
 - **Embeddings**: Google text-embedding-004
 - **Vector DB**: Pinecone with BGE-v2 Reranker
 - **Backend**: FastAPI + LangChain
-- **Data**: Rich medical history from 500 Synthea patients
+- **Data**: Rich medical history from **10,000+ Synthea patients**
