@@ -251,7 +251,7 @@ class RAGEngine:
             "documents_retrieved": len(retrieved_docs)
         }
     
-    def get_all_patients(self, search_query: str = "", limit: int = 100) -> list[dict]:
+    def get_all_patients(self, search_query: str = "", limit: int = 200) -> list[dict]:
         """
         Get a list of all patient names/IDs in the index.
         
@@ -264,17 +264,17 @@ class RAGEngine:
         pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
         index = pc.Index(self.index_name)
         
-        # Get index stats to understand the data
         try:
-            # Query a sample to get patient metadata
-            # Use a generic health query to retrieve diverse results
-            query_text = search_query if search_query else "patient health record"
+            # Query with a generic patient query to retrieve diverse results
+            query_text = search_query if search_query else "patient medical record demographics"
             query_embedding = self.embeddings.embed_query(query_text)
             
+            # Fetch more to get diverse patients
             results = index.query(
                 vector=query_embedding,
-                top_k=min(limit, 500),
-                include_metadata=True
+                top_k=min(limit * 3, 1000),  # Fetch more to filter
+                include_metadata=True,
+                filter={"type": {"$eq": "health_summary"}}  # Only patient records, not knowledge base
             )
             
             # Extract unique patients
@@ -283,6 +283,10 @@ class RAGEngine:
                 metadata = match.get('metadata', {})
                 patient_id = metadata.get('patient_id')
                 patient_name = metadata.get('patient_name', 'Unknown')
+                
+                # Skip knowledge base entries
+                if metadata.get('type') == 'medical_knowledge':
+                    continue
                 
                 if patient_id and patient_id not in patients:
                     # Apply search filter if provided
@@ -294,8 +298,11 @@ class RAGEngine:
                         "id": patient_id,
                         "name": patient_name
                     }
+                    
+                    if len(patients) >= limit:
+                        break
             
-            return list(patients.values())[:limit]
+            return list(patients.values())
             
         except Exception as e:
             print(f"Error fetching patients: {e}")

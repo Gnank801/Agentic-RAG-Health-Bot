@@ -142,20 +142,30 @@ def create_knowledge_documents(data_dir: str) -> List[Document]:
         reader = csv.DictReader(f)
         for row in reader:
             disease = row.get("Disease", "Unknown Disease")
+            if not disease or disease == "Unknown Disease":
+                continue
             
             # Collect symptoms
             symptoms = []
+            precautions = []
+            
             for k, v in row.items():
-                if k and "Symptom" in k and v:
-                    symptoms.append(v.replace("_", " "))
+                if not k or not v:
+                    continue
+                if "Symptom" in k:
+                    symptoms.append(v.strip().replace("_", " "))
+                elif k == "Precautions" or "Precaution" in k:
+                    # Precautions column contains comma-separated values
+                    for p in v.split(","):
+                        if p.strip():
+                            precautions.append(p.strip())
             
-            precautions = row.get("Precautions", row.get("Precaution_1", ""))
-            
+            # Build rich content
             content = (
-                f"Disease: {disease}\n"
-                f"Symptoms: {', '.join(symptoms)}\n"
-                f"Precautions/Treatment: {precautions}\n"
-                "Type: General Medical Knowledge"
+                f"Disease: {disease}\n\n"
+                f"Common Symptoms:\n- " + "\n- ".join(symptoms) + "\n\n"
+                f"Recommended Precautions:\n- " + "\n- ".join(precautions) + "\n\n"
+                "Source: General Medical Knowledge Base (Kaggle Disease-Symptom Dataset)"
             )
             
             doc = Document(
@@ -163,6 +173,7 @@ def create_knowledge_documents(data_dir: str) -> List[Document]:
                 metadata={
                     "type": "medical_knowledge",
                     "disease": disease,
+                    "patient_name": f"[Knowledge] {disease}",  # For consistent source display
                     "source": "kaggle_disease_symptom_dataset"
                 }
             )
