@@ -93,7 +93,7 @@ class RAGEngine:
         
         # Initialize LLM (Groq Llama 3.3 70B - much higher rate limits!)
         self.llm = ChatGroq(
-            model="llama-3.1-8b-instant",
+            model="llama-3.3-70b-versatile",
             api_key=os.getenv("GROQ_API_KEY"),
             temperature=0,  # Deterministic for medical accuracy
             max_tokens=2048
