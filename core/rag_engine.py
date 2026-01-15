@@ -66,11 +66,6 @@ Organize your response as:
 
 ---
 
-**CONVERSATION HISTORY:**
-{chat_history}
-
----
-
 **CONTEXT (Retrieved Patient Records):**
 {context}
 
@@ -98,7 +93,7 @@ class RAGEngine:
         
         # Initialize LLM (Groq Llama 3.3 70B - much higher rate limits!)
         self.llm = ChatGroq(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             api_key=os.getenv("GROQ_API_KEY"),
             temperature=0,  # Deterministic for medical accuracy
             max_tokens=2048
@@ -166,8 +161,7 @@ class RAGEngine:
     def query(
         self,
         question: str,
-        patient_id: Optional[str] = None,
-        chat_history: str = ""
+        patient_id: Optional[str] = None
     ) -> dict:
         """
         Query the RAG engine for a health summary.
@@ -175,7 +169,6 @@ class RAGEngine:
         Args:
             question: The user's question
             patient_id: Optional patient ID for filtered retrieval
-            chat_history: Formatted string of previous conversation
         
         Returns:
             Dict with response, sources, and metadata
@@ -207,8 +200,7 @@ class RAGEngine:
             try:
                 response = chain.invoke({
                     "context": context,
-                    "question": question,
-                    "chat_history": chat_history or "None."
+                    "question": question
                 })
                 break  # Success, exit retry loop
             except Exception as e:

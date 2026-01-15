@@ -88,22 +88,34 @@ def create_patient_documents(patient_data: dict) -> List[Document]:
             f"Blood Type: {demo.get('blood_type', 'N/A')}"
         )
     
-    if "allergies" in patient_data:
+    # CRITICAL: Diagnoses/Conditions
+    if "diagnoses" in patient_data and patient_data["diagnoses"]:
+        diagnoses = ", ".join(patient_data["diagnoses"][:10])  # Top 10
+        content_parts.append(f"Current Diagnoses: {diagnoses}")
+    
+    # CRITICAL: Medications
+    if "medications" in patient_data and patient_data["medications"]:
+        medications = ", ".join(patient_data["medications"][:10])  # Top 10
+        content_parts.append(f"Current Medications: {medications}")
+    
+    if "allergies" in patient_data and patient_data["allergies"]:
         allergies = ", ".join(patient_data["allergies"])
         content_parts.append(f"Known Allergies: {allergies}")
     
-    if "procedures" in patient_data:
-        procedures = ", ".join(patient_data["procedures"])
-        content_parts.append(f"Medical Procedures: {procedures}")
+    if "procedures" in patient_data and patient_data["procedures"]:
+        procedures = ", ".join(patient_data["procedures"][:5])  # Top 5
+        content_parts.append(f"Recent Procedures: {procedures}")
     
-    if "immunizations" in patient_data:
-        immunizations = ", ".join(patient_data["immunizations"])
-        content_parts.append(f"Immunization Records: {immunizations}")
+    if "immunizations" in patient_data and patient_data["immunizations"]:
+        immunizations = ", ".join(patient_data["immunizations"][:5])  # Top 5
+        content_parts.append(f"Immunizations: {immunizations}")
     
-    if "observations" in patient_data:
+    if "observations" in patient_data and patient_data["observations"]:
         observations = patient_data["observations"]
-        obs_str = "; ".join([f"{k}: {v}" for k, v in observations.items()])
-        content_parts.append(f"Clinical Observations: {obs_str}")
+        # Get top 10 observations
+        obs_items = list(observations.items())[:10]
+        obs_str = "; ".join([f"{k}: {v}" for k, v in obs_items])
+        content_parts.append(f"Recent Vitals/Labs: {obs_str}")
 
     if "notes" in patient_data and patient_data["notes"]:
         content_parts.append(f"Clinical Notes: {patient_data['notes']}")

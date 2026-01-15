@@ -28,11 +28,10 @@ graph TD
 
 ## 🚀 Key Features Implemented
 
-1.  **Rich Medical History**: Ingested data from 7+ Synthea CSVs (Allergies, Procedures, Immunizations, etc.)
-2.  **Conversation Context**: Multi-turn chat support via stateful frontend history
-3.  **Hybrid RAG**: Seamlessly queries **Specific Patient Data** OR **General Medical Knowledge** (Kaggle dataset).
-4.  **10k Patient Scale**: Pipeline optimized with batching to handle 10,000+ records (1M+ vectors).
-5.  **Premium UI**: Searchable sidebar, glassmorphism design, and PDF export.
+1.  **Rich Medical History**: Ingested data from 7+ Synthea CSVs (Diagnoses, Medications, Allergies, Procedures, etc.)
+2.  **Hybrid RAG**: Seamlessly queries **Specific Patient Data** OR **General Medical Knowledge** (Kaggle dataset).
+3.  **10k Patient Scale**: Pipeline optimized with batching to handle 10,000+ records (1M+ vectors).
+4.  **Premium UI**: Searchable sidebar, glassmorphism design, and PDF export.
 
 ---
 

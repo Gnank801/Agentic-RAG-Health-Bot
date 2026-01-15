@@ -24,7 +24,6 @@ load_dotenv()
 class QueryRequest(BaseModel):
     question: str
     patient_id: Optional[str] = None
-    chat_history: Optional[str] = ""
 
 
 class QueryResponse(BaseModel):
@@ -135,8 +134,7 @@ async def query_health_data(request: QueryRequest):
         engine = get_rag_engine()
         result = engine.query(
             question=request.question,
-            patient_id=request.patient_id,
-            chat_history=request.chat_history
+            patient_id=request.patient_id
         )
         return QueryResponse(**result)
     except Exception as e:

@@ -9,7 +9,7 @@ An AI-powered **Agentic RAG** system for querying patient health records at scal
 - **Agentic RAG**: Retrieves and synthesizes data from **10,000+ synthetic patient records**.
 - **Rich Medical Context**: Ingests Demographics, Diagnoses, Medications, Allergies, Immunizations, and Procedures.
 - **Smart Retrieval**: Uses **Hybrid Search** + **BGE Reranking** for high precision.
-- **Multi-turn Chat**: Remembers conversation context (e.g., "What about *his* medication?").
+- **Knowledge Base**: Also answers general medical questions (e.g., "Precautions for Diabetes?").
 - **Premium UI**: Glassmorphism design with patient search, detail modals, and PDF export.
 
 ## 🚀 Quick Start
