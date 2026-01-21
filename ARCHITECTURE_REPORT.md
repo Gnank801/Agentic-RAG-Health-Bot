@@ -1,6 +1,6 @@
-# RAG Health Agent — Architecture & Analysis
+# RAG Health Agent - Architecture & Analysis
 
-## 🏗️ System Architecture
+##  System Architecture
 
 The RAG Health Agent follows a multi-stage retrieval-augmented generation pipeline optimized for medical precision and safety.
 
@@ -26,7 +26,7 @@ graph TD
 
 ---
 
-## 🚀 Key Features Implemented
+##  Key Features Implemented
 
 1.  **Rich Medical History**: Ingested data from 7+ Synthea CSVs (Diagnoses, Medications, Allergies, Procedures, etc.)
 2.  **Hybrid RAG**: Seamlessly queries **Specific Patient Data** OR **General Medical Knowledge** (Kaggle dataset).
@@ -35,7 +35,7 @@ graph TD
 
 ---
 
-## ⚠️ Challenges Faced
+##  Challenges Faced
 
 ### 1. API Rate Limits (The "429" Blocker)
 *   **Issue**: Initial dev with Gemini 2.0 Flash hit quota limits instantly during multi-turn chats.
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 📈 Potential Improvements
+##  Potential Improvements
 
 1.  **HyDE (Hypothetical Document Embeddings)**: Could improve retrieval for complex medical questions.
 2.  **Knowledge Graph**: Augment RAG with a graph database (Neo4j) to track relationships between symptoms and medications.
@@ -59,7 +59,7 @@ graph TD
 
 ---
 
-## ⚖️ Cons & Limitations
+##  Cons & Limitations
 
 - **Latency**: Reranking adds ~500ms to the request.
 - **Cost**: High-dimension embeddings and rerankers incur costs at scale.
